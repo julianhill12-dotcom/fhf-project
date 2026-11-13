@@ -187,6 +187,19 @@ def patch_metadata(client, dataset_id: str, cfg: dict):
 # Tabular upload: vessel track + ΔSv
 # ---------------------------------------------------------------------------
 
+def parse_stem_meta(stem: str) -> dict:
+    """Extract vessel name and year from AKBM filename stem.
+
+    Format: AKBM-{Vessel}-{Year}-...-D{YYYYMMDD}-T{HHMMSS}[-ES60]
+    Example: AKBM-AntarcticSea-2025-D20250101-T000557
+             AKBM-SagaSea-2011-L0041-D20110331-T004427-ES60
+    """
+    parts = stem.split("-")
+    vessel = parts[1] if len(parts) > 1 else "Unknown"
+    year   = parts[2] if len(parts) > 2 and parts[2].isdigit() else "Unknown"
+    return {"vessel": vessel, "year": year}
+
+
 def build_track_schema():
     """PyArrow schema for the ΔSv track table with full ODP column metadata."""
     import pyarrow as pa
@@ -195,6 +208,13 @@ def build_track_schema():
                  metadata={"description": "UUID primary key."}),
         pa.field("stem", pa.string(), nullable=False,
                  metadata={"description": "Source file stem (AKBM filename without .raw)."}),
+        pa.field("vessel", pa.string(), nullable=True,
+                 metadata={"description": (
+                     "Vessel name extracted from filename. "
+                     "One of: AntarcticSea, AntarcticProvider, Endurance, SagaSea."
+                 )}),
+        pa.field("year", pa.string(), nullable=True,
+                 metadata={"description": "Survey year extracted from filename (e.g. 2025)."}),
         pa.field("timestamp", pa.string(), nullable=False,
                  metadata={"description": "Ping time (UTC, ISO-8601 string)."}),
         pa.field("latitude", pa.float64(), nullable=True,
@@ -229,12 +249,15 @@ def csv_to_rows(csv_path: Path) -> list[dict]:
     with open(csv_path, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            lat = float(row["latitude"])
-            lon = float(row["longitude"])
-            dsv = float(row["dSv_mean_dB"]) if row["dSv_mean_dB"] else None
+            lat  = float(row["latitude"])
+            lon  = float(row["longitude"])
+            dsv  = float(row["dSv_mean_dB"]) if row["dSv_mean_dB"] else None
+            meta = parse_stem_meta(row["stem"])
             rows.append({
                 "id":             str(uuid.uuid4()),
                 "stem":           row["stem"],
+                "vessel":         meta["vessel"],
+                "year":           meta["year"],
                 "timestamp":      row["timestamp"],
                 "latitude":       lat,
                 "longitude":      lon,

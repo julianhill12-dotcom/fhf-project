@@ -48,12 +48,8 @@ def process_raw(raw_path: Path, cfg: dict, output_dir: Path):
 
     # --- 1. Parse raw file → EchoData (SONAR-netCDF4) ---
     print(f"\n[1/3] Parsing {raw_path.name} ...")
-    # Detect sonar model from filename convention or config.
-    # AKBM vessels used both EK60 and EK80; 2025 data is EK80.
-    sonar_model = "EK80" if "EK80" in raw_path.name.upper() else "EK60"
-    # Fallback: EK80 is correct for recent AKBM vessels.
-    if sonar_model == "EK60":
-        sonar_model = "EK80"
+    # Detect sonar model from filename: old AKBM files have "-ES60" in the name.
+    sonar_model = "EK60" if "ES60" in raw_path.name.upper() else "EK80"
 
     ed = ep.open_raw(str(raw_path), sonar_model=sonar_model)
 
