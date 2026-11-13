@@ -1,0 +1,31 @@
+# FHF DABB-PADABB WP4 — Hydroacoustic workflow dependencies
+#
+# Install with: pip install -r requirements.txt
+#
+# IMPORTANT: zarr is pinned to <3.4 — do not upgrade without testing.
+# echopype 0.11.1 uses the zarr 3.x encoding API; zarr 3.4+ broke the
+# 'compressor' parameter that xarray passes when saving to Zarr format.
+
+# --- Core acoustic processing ---
+echopype==0.11.1
+zarr>=3,<3.4
+
+# --- Data / numerics ---
+xarray
+numpy
+scipy
+
+# --- ODP access ---
+odp-sdk
+
+# --- Tabular / spatial (for ODP upload) ---
+pyarrow
+shapely
+
+# --- Visualisation ---
+matplotlib
+
+# --- Utilities ---
+pyyaml
+tqdm
+requests

@@ -1,0 +1,94 @@
+# FHF DABB-PADABB WP4 — Pipeline configuration
+#
+# SETUP: Copy this file to config.yml and fill in your values.
+#        config.yml is gitignored — never commit it.
+#
+# Run:  python scripts/01_odp_download.py   (then 02, 03, 04, 05, 06 in order)
+#   or: .\run_pipeline.ps1                  (Windows — runs all 6 steps)
+#   or: bash run_pipeline.sh                (Mac / Linux)
+
+odp:
+  # Base URL for the ODP API (do not change)
+  base_url: "https://api.hubocean.earth"
+
+  # UUID of the dataset to download raw EK80 files from.
+  # The parent data collection is: 7c61c869-a7c1-4f1c-900e-34636ee3392a
+  #   (Aker BioMarine EK60, EK80 Echosounder data)
+  #
+  # Known dataset UUIDs (confirmed November 2026):
+  #
+  #   Antarctic Sea (vessel: Antarctic Sea)
+  #     85b8d710-6865-45ea-b287-7c8215c5bf95   Antarctic Sea 2025   ← default
+  #     fd774246-a867-4c02-9623-8cbff83a4c6c   Antarctic Sea 2024
+  #     863b114a-b850-4a57-87a5-63c4d1a6ef28   Antarctic Sea 2023
+  #     a8e28b4c-b04b-4ca3-aaa5-3e75d7f84777   Antarctic Sea 2022
+  #     db17042e-ef18-4ec9-84be-da33c461dd9e   Antarctic Sea 2021
+  #     ad5536fd-a2bb-4b2b-935a-c4a406d9a5ad   Antarctic Sea 2020
+  #     fe083625-a880-4469-b12c-66a331a8a960   Antarctic Sea 2017
+  #     a6cfbb08-68e4-49b9-add6-5a463421f0d0   Antarctic Sea 2016
+  #
+  #   Antarctic Provider (vessel: Antarctic Provider)
+  #     7431d508-bed6-4ca6-b514-9b8a57acb53f   Antarctic Provider 2025
+  #     45a32814-f844-400a-be2a-e7a4e230bede   Antarctic Provider 2024
+  #     1c7c6922-1961-4ff8-9684-d3658baac16e   Antarctic Provider 2023
+  #     f77ce947-4154-4931-b9d6-981152a7d3f7   Antarctic Provider 2022
+  #
+  #   Endurance (vessel: Endurance)
+  #     25e9de0b-d517-441e-bec9-0dff3b7e4bd0   Endurance 2025
+  #     8b9dba46-2665-481b-a4a1-0f364ca83a98   Endurance 2024
+  #     5cf13ecb-6e12-41b8-8cfc-9c9c6eb2065d   Endurance 2023
+  #     b81ea9ac-1c64-46cf-9c80-82503737ce3a   Endurance 2022
+  #     d5c8fa9e-a8e7-4fae-8665-1f8965c89691   Endurance 2021
+  #
+  #   Saga Sea (vessel: Saga Sea)
+  #     3d1d97bc-7698-47f0-89e1-cac0ab9656b1   Saga Sea 2025
+  #     0fd87f02-a912-46d4-b058-5da21fa5cb5b   Saga Sea 2024
+  #     093575aa-7a3f-4e4f-9070-de560c23aa98   Saga Sea 2023
+  #     097cf084-bf6b-48e1-84c0-754773045a21   Saga Sea 2022
+  #     d6898be9-a9e7-48c2-8290-1f69a905c6c2   Saga Sea 2021
+  #     a70a9b3f-b636-4132-8a16-147d272a55ba   Saga Sea 2020
+  #     e7779e73-4c9d-49ed-985b-3aa2549d068b   Saga Sea 2019
+  #     840fa688-64ce-4f2f-8217-159775e94e22   Saga Sea 2018
+  #     d12cb9eb-e2cb-4586-af05-95abb42e3980   Saga Sea 2017
+  #     a80d510c-7732-42f4-8bc7-f47d9c519996   Saga Sea 2016
+  #     a4c8957e-5f2f-4dc4-a887-bdd24b1d7edd   Saga Sea 2013
+  #     fc74152d-b256-4ce0-81d4-e1f87e88c4af   Saga Sea 2011
+  #
+  #   Other
+  #     a954a551-4be9-4059-a85a-b3ef8f75e75f   Tracklines and Metadata (2011-2025)
+  #     058bd885-5788-4bed-94ee-9efb47081bad   Saga Sea LNSK
+  #     7e8690be-783b-41c9-97cf-bf30067d7bf0   Sagasea Kalibrering
+
+  collection_id: "85b8d710-6865-45ea-b287-7c8215c5bf95"
+
+  # Number of raw files to download per run (1 file ≈ 30 min of survey, ~105 MB)
+  n_files: 1
+
+processing:
+  # EK80 narrowband (CW) is correct for AKBM fishing-vessel data.
+  # Use "BB" / "complex" only for broadband wideband mode (rare in this dataset).
+  waveform_mode: "CW"    # "CW" or "BB"
+  encode_mode: "power"   # "power" or "complex"
+
+  # MVBS grid resolution — 1 m depth × 5 s time is standard for survey work
+  range_bin: "1m"
+  ping_time_bin: "5s"
+  range_max_m: 500       # maximum depth to process (m)
+
+outputs:
+  data_dir: "./data"
+  output_dir: "./outputs"
+
+upload:
+  # UUID of the target dataset on ODP where derived products will be stored.
+  # Set to your project dataset UUID. Leave blank for a dry-run.
+  dataset_id: ""
+
+  # Only needed when creating a NEW dataset from scratch (leave blank otherwise).
+  collection_id: ""
+
+  # Licence to apply to the derived dataset.
+  license: "CC-BY-4.0"
+
+  # Citation text for the derived products.
+  citation: "HUB Ocean / FHF DABB-PADABB WP4 (2026). Frequency-differenced acoustic vessel tracks derived from Aker BioMarine EK80 data via Echopype."
